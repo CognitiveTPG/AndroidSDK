@@ -10,6 +10,7 @@ import java.util.UUID;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.util.Log;
 
 /**
@@ -17,7 +18,7 @@ import android.util.Log;
  * @author Manoj
  *
  */
-public class BTConnection extends ConnectionManager
+public class BTConnection extends com.cognitive.connection.ConnectionManager
 {
 	private BluetoothSocket socket = null;
 	private InputStream inStream;
@@ -38,7 +39,7 @@ public class BTConnection extends ConnectionManager
 	 * 1.  No Bluetooth Adapter Found - If there is no bluetooth adapter.
 	 * 2.  Bluetooth Adapter id Off	 - If Bluetooth Adapter is off. 
 	 */
-	protected static ArrayList<Device>  searchPrinters() throws Exception
+	protected static ArrayList<Device>  searchPrinters(Context context) throws Exception
 	{
 		ArrayList<Device> list=new ArrayList<Device>();
 		
@@ -47,20 +48,24 @@ public class BTConnection extends ConnectionManager
 		{
 			throw new Exception("No Bluetooth Adapter Found");
 		}
-		if (adapter.getState() != 12)
+		if (adapter.getState() != BluetoothAdapter.STATE_ON)
 		{
 			throw new Exception("Bluetooth Adapter is Off");
 		}
-		Set<BluetoothDevice> devices=adapter.getBondedDevices();
-		for(BluetoothDevice device:devices)
-		{                  
-			if(device!=null && device.getAddress().startsWith("00:80:E1")) //00:06:66 for RN Module 00:80:E1 for ST Module
-            {
-				String name=device.getName();
-				String address=device.getAddress();
-				Device dev=new Device(name, address);
-				list.add(dev);
-            }
+		try {
+			Set<BluetoothDevice> devices=adapter.getBondedDevices();
+			for(BluetoothDevice device:devices)
+			{
+				if(device!=null && device.getAddress().startsWith("00:80:E1")) //00:06:66 for RN Module 00:80:E1 for ST Module
+				{
+					String name=device.getName();
+					String address=device.getAddress();
+					Device dev=new Device(name, address);
+					list.add(dev);
+				}
+			}
+		} catch (SecurityException e) {
+			throw new SecurityException(e);
 		}
 		return list;
 	}
@@ -73,7 +78,7 @@ public class BTConnection extends ConnectionManager
 		{
 			throw new Exception("No Bluetooth Adapter Found");
 		}
-		if (adapter.getState() != 12)
+		if (adapter.getState() != BluetoothAdapter.STATE_ON)
 		{
 			throw new Exception("Bluetooth Adapter is Off");
 		}
@@ -99,7 +104,14 @@ public class BTConnection extends ConnectionManager
 	        {
 	        	listener.onConnected();
 	        }
-		} 
+		}
+		catch (SecurityException e){
+			if(listener!=null)
+			{
+				listener.onError(e.getMessage());
+			}
+			throw new SecurityException(e);
+		}
 		catch (Exception e) 
 		{
 			if(listener!=null)

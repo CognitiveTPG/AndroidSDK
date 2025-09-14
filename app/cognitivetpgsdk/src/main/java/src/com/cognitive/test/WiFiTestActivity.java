@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.cognitive.connection.ConnectionManager;
 import com.cognitive.connection.DevType;
 import com.cognitive.connection.Device;
+import com.cognitive.printer.R;
 
 public class WiFiTestActivity extends Activity
 {
@@ -31,7 +32,7 @@ public class WiFiTestActivity extends Activity
 		catch (Exception e) 
 		{
 			e.printStackTrace();
-			textView.setText("Network Error"+e.getMessage());
+			textView.setText(getResources().getString(R.string.network_error,e.getMessage()));
 		}
 	}
 	

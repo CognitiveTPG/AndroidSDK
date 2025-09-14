@@ -12,7 +12,7 @@ import android.content.Context;
  */
 public abstract class ConnectionManager 
 {
-	protected ConnectionListener listener;
+	protected com.cognitive.connection.ConnectionListener listener;
 	
 	/**
 	 * This method search the nearby printers.
@@ -21,16 +21,16 @@ public abstract class ConnectionManager
 	 * @throws Exception This method throws a custom exception "Dev type unknown". For current implementation this will throws in all interface type other than Bluetooth.
 	 * 
 	 */
-	public static ArrayList<Device>  searchPrinters(DevType type,Context context) throws Exception
+	public static ArrayList<Device>  searchPrinters(com.cognitive.connection.DevType type, Context context) throws Exception
 	{
 		ArrayList<Device> list=new ArrayList<Device>();
-		if(DevType.BLUETOOTH==type)
+		if(com.cognitive.connection.DevType.BLUETOOTH==type)
 		{
-			list=BTConnection.searchPrinters();
+			list= com.cognitive.connection.BTConnection.searchPrinters(context);
 		}
-		else if(DevType.TCP==type)
+		else if(com.cognitive.connection.DevType.TCP==type)
 		{
-			list=TCPConnection.searchPrintersIP();
+			list= com.cognitive.connection.TCPConnection.searchPrintersIP();
 		}
 		else
 		{
@@ -38,12 +38,12 @@ public abstract class ConnectionManager
 		}
 		return list;
 	}
-	public static ArrayList<Device>  pingPrinters(DevType type,Context context) throws Exception
+	public static ArrayList<Device>  pingPrinters(com.cognitive.connection.DevType type, Context context) throws Exception
 	{
 		ArrayList<Device> list=new ArrayList<Device>();
-		if(DevType.TCP==type)
+		if(com.cognitive.connection.DevType.TCP==type)
 		{
-			list=TCPConnection.pingPrinters(context);
+			list= com.cognitive.connection.TCPConnection.pingPrinters(context);
 		}
 		else
 		{
@@ -58,16 +58,16 @@ public abstract class ConnectionManager
 	 * @return This method returns connection object.
 	 * @throws Exception This method throw "Dev type unknown" if device's interface type is not Bluetooth.
 	 */
-	public static ConnectionManager getConnection(DevType type) throws Exception
+	public static ConnectionManager getConnection(com.cognitive.connection.DevType type) throws Exception
 	{
 		ConnectionManager con=null;
-		if(DevType.BLUETOOTH==type)
+		if(com.cognitive.connection.DevType.BLUETOOTH==type)
 		{
-			con=new BTConnection();
+			con=new com.cognitive.connection.BTConnection();
 		}
-		else if(DevType.TCP==type)
+		else if(com.cognitive.connection.DevType.TCP==type)
 		{
-			con=new TCPConnection();
+			con=new com.cognitive.connection.TCPConnection();
 		}
 		else
 		{
@@ -110,7 +110,7 @@ public abstract class ConnectionManager
 	 * 
 	 * @param listener
 	 */
-	public void setConnectionListener(ConnectionListener listener)
+	public void setConnectionListener(com.cognitive.connection.ConnectionListener listener)
 	{
 		this.listener=listener;
 	}

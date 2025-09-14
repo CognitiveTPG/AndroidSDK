@@ -22,13 +22,13 @@ public class PoSPrinter extends Printer
 	 */
 	PoSPrinter() 
 	{
-		super(PrinterModel.A799,CommandSet.A799_F);
+		super(com.cognitive.printer.PrinterModel.A799,CommandSet.A799_F);
 	}
 
 	/**
 	 * This command helps developer to get the Model number.
 	 */
-	public PrinterModel getModel()
+	public com.cognitive.printer.PrinterModel getModel()
 	{
 		return model;
 	}
@@ -297,7 +297,7 @@ public class PoSPrinter extends Printer
 			
 			byte[] data=new byte[1024];
 			int size=connection.readData(data, 0, data.length);
-			Log.i("Data Boot Firmware Version :", ""+data);
+			Log.i("Boot Firmware Version:", ""+data);
 			if(size>0)
 			{
 				response=new String(data, 1, size);
@@ -324,7 +324,7 @@ public class PoSPrinter extends Printer
 			
 			byte[] data=new byte[1024];
 			int size=connection.readData(data, 0, data.length);
-			Log.i("Data getFlashFirmwareVersion", ""+data);
+			Log.i("FlashFirmwareVersion:", ""+data);
 			if(size>0)
 			{
 				response=new String(data, 1, size);

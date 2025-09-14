@@ -14,7 +14,7 @@ import android.content.IntentFilter;
 public class Scanner 
 {
 	private Context context;
-	private ScanListener listener;
+	private com.cognitive.connection.ScanListener listener;
 	
 	public Scanner(Context context)
 	{
@@ -37,8 +37,14 @@ public class Scanner
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if(device!=null && device.getAddress().startsWith("00:06:66"))
                 {
-                	if(listener!=null)
-    					listener.onDeviceFound(device.getName(),device.getAddress());
+                	if(listener!=null){
+						try{
+							listener.onDeviceFound(device.getName(),device.getAddress());
+						}catch (SecurityException e){
+							throw new SecurityException(e);
+						}
+					}
+
                 }
             } 
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) 
@@ -59,7 +65,7 @@ public class Scanner
      * This method start the scanning of the device.
      * @param listener This parameter  is the ScanListener, we are passing this parameter to catch the scanning events.
      */
-    public void startScan(final ScanListener listener)
+    public void startScan(final com.cognitive.connection.ScanListener listener)
 	{
 		this.listener=listener;
 		IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
@@ -78,17 +84,20 @@ public class Scanner
 				listener.onError("No Bluetooth Supported");
 			 return;
 		}
-		if (adapter.getState() != 12)
+		if (adapter.getState() != BluetoothAdapter.STATE_ON)
 		{
 			if(listener!=null)
 				listener.onError("Bluetooth Disabled");
 			return;
 		}
-		if (adapter.isDiscovering()) 
-	    {
-			adapter.cancelDiscovery();
-	    }
-		adapter.startDiscovery();
+		try {
+			if (adapter.isDiscovering()) {
+				adapter.cancelDiscovery();
+			}
+			adapter.startDiscovery();
+		} catch (SecurityException e) {
+			throw new SecurityException(e);
+		}
 	}
 
 }

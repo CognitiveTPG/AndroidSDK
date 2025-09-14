@@ -24,7 +24,7 @@ import android.widget.ArrayAdapter;
  * @author Manoj
  *
  */
-public class TCPConnection extends ConnectionManager
+public class TCPConnection extends com.cognitive.connection.ConnectionManager
 {
 	private boolean isActive=false;
 	private Socket socket;
@@ -36,126 +36,114 @@ public class TCPConnection extends ConnectionManager
 	{
 		
 	}
-	
-	
-	protected static ArrayList<Device>  searchPrintersIP() throws Exception
-	{
-		ArrayList<Device> list=new ArrayList<Device>();
-		
-		 StringBuffer echo = new StringBuffer();
-		   try {
-		     BufferedReader br = new BufferedReader(new FileReader("/proc/net/arp"));
-		     String line = "";
-		     while((line = br.readLine()) != null) 
-		     {	
-		    	 String[] tokens = line.split(" +");
-		    	 echo.append(line + "\n");
+
+
+	protected static ArrayList<Device> searchPrintersIP() throws Exception {
+		ArrayList<Device> list = new ArrayList<Device>();
+
+		StringBuffer echo = new StringBuffer();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("/proc/net/arp"));
+			String line = "";
+			while ((line = br.readLine()) != null) {
+				String[] tokens = line.split(" +");
+				echo.append(line + "\n");
 //		    	 System.out.println(echo);
-		    		/**
-		    		 * We are Extracting IP and MAC address from ARP table
-		    		 * ARP cache (/proc/net/arp).<br>
-		    		 * <br>
-		    		 * Structure of this file is : <br>
-		    		 * <br>
-		    		 * IP address    HW type     Flags       HW address            Mask     Device
-		    		 * 192.168.2.2    0x1         0x2         00:04:20:06:55:1a     *        eth0
-		    		 * 192.168.2.9    0x1         0x2         00:22:43:ab:2a:5b     *        eth0
-		    		 * */
-		    	 
-		    	 /**
-		    	  * Flags 0x2 means this IP can be Pinged
-		    	  */
-		    	 if(tokens[2].equalsIgnoreCase("0x2"))
-		    	 {
-		    		 System.out.println(tokens[2] +" " +tokens[0] + " "+tokens[3]);
-		    		 String macAddOctect = tokens[3].substring(0, 8);
-		    		 /** 
-		    		  * We are checking CTPG printer by its first 3 octet of MAC Address
-		    		  */
-		    		 if(macAddOctect.equalsIgnoreCase("00:E0:70"))
-		    		 {
-		    			 Device dev=new Device(tokens[0], tokens[3]);
-		    			 list.add(dev);
-		    			 continue;
-		    		 }
-		    	 }
-		    	 
-		     }
-		     br.close();
-		   }
-		   catch(Exception e)
-		   {
-			   e.printStackTrace();
-		   }
+				/**
+				 * We are Extracting IP and MAC address from ARP table
+				 * ARP cache (/proc/net/arp).<br>
+				 * <br>
+				 * Structure of this file is : <br>
+				 * <br>
+				 * IP address    HW type     Flags       HW address            Mask     Device
+				 * 192.168.2.2    0x1         0x2         00:04:20:06:55:1a     *        eth0
+				 * 192.168.2.9    0x1         0x2         00:22:43:ab:2a:5b     *        eth0
+				 * */
+
+				/**
+				 * Flags 0x2 means this IP can be Pinged
+				 */
+				if (tokens[2].equalsIgnoreCase("0x2")) {
+					System.out.println(tokens[2] + " " + tokens[0] + " " + tokens[3]);
+					String macAddOctect = tokens[3].substring(0, 8);
+					/**
+					 * We are checking CTPG printer by its first 3 octet of MAC Address
+					 */
+					if (macAddOctect.equalsIgnoreCase("00:E0:70")) {
+						Device dev = new Device(tokens[0], tokens[3]);
+						list.add(dev);
+						continue;
+					}
+				}
+
+			}
+			br.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return list;
 	}
-	protected static ArrayList<Device>  pingPrinters(Context context) throws Exception
-	{
-		ArrayList<Device> list=new ArrayList<Device>();
-		WifiManager wifiMgr =(WifiManager) context.getSystemService(Context.WIFI_SERVICE); 
-    	WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
-    	int ipadd = wifiInfo.getIpAddress();
-    	String ipAddress = Formatter.formatIpAddress(ipadd);
-    	System.out.println("ipAddress: "+ipAddress);
-    	 for (int i = 1; i <= 255; i++) 
-    	 {
-    		 String addr = ipAddress;
-    		 addr = addr.substring(0, addr.lastIndexOf('.') + 1) + i;
-    		 InetAddress pingAddr = null;
-    		 try 
-    		 {
-    			 
-    			 pingAddr = InetAddress.getByName(addr);
-    			 if (pingAddr.isReachable(500))
-    			 {
-    				 	
-    				 boolean isCognitivePrinter= filterCognitivePrinter(pingAddr);
-    				 if(isCognitivePrinter)
-    				 {
-    					 Device dev=new Device(pingAddr.toString(), "");
-		    			 list.add(dev);
-		    			 continue;
-    				 }
-    			 }
-    		 } 
-    		 catch (IOException e) 
-    		 {
-    			 // TODO Auto-generated catch block
-    			 e.printStackTrace();
-    		 }
-    	 }
+
+	protected static ArrayList<Device> pingPrinters(Context context) throws Exception {
+		ArrayList<Device> list = new ArrayList<Device>();
+		WifiManager wifiMgr = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+		int ipadd = wifiInfo.getIpAddress();
+		String ipAddress = Formatter.formatIpAddress(ipadd);
+		System.out.println("ipAddress: " + ipAddress);
+		for (int i = 1; i <= 255; i++) {
+			String addr = ipAddress;
+			addr = addr.substring(0, addr.lastIndexOf('.') + 1) + i;
+			InetAddress pingAddr = null;
+			try {
+
+				pingAddr = InetAddress.getByName(addr);
+				if (pingAddr.isReachable(500)) {
+
+					boolean isCognitivePrinter = filterCognitivePrinter(pingAddr);
+					if (isCognitivePrinter) {
+						Device dev = new Device(pingAddr.toString(), "");
+						list.add(dev);
+						continue;
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return list;
 	}
 
 	private static boolean filterCognitivePrinter(InetAddress pingAddr) {
 		if (pingAddr == null)
-	    return false;
-	    BufferedReader br = null;
-	    try {
-	        br = new BufferedReader(new FileReader("/proc/net/arp"));
-	        String line;
-	        while ((line = br.readLine()) != null) {
-	            String[] splitted = line.split(" +");
-	            if (splitted != null && splitted.length >= 4 && pingAddr.equals(splitted[0])) {
-	                // Basic sanity check
-	                String mac = splitted[3];
-	                String macAddOctect = mac.substring(0, 8);
-	                if (macAddOctect.equalsIgnoreCase("00:E0:70")) {
-	                    return true;
-	                } else {
-	                    return false;
-	                }
-	            }
-	        }
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    } finally {
-	        try {
-	            br.close();
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    }
+			return false;
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader("/proc/net/arp"));
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] splitted = line.split(" +");
+				if (splitted != null && splitted.length >= 4 && pingAddr.equals(splitted[0])) {
+					// Basic sanity check
+					String mac = splitted[3];
+					String macAddOctect = mac.substring(0, 8);
+					if (macAddOctect.equalsIgnoreCase("00:E0:70")) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		return false;
 	}
 
